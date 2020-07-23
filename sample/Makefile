@@ -55,11 +55,11 @@ TARGET = @(TARGET)
 #
 SRCLANG = @(SRCLANG)
 ifeq ($(SRCLANG),c)
-	LIBS = -lc
+	LIBS = -lmruby -lm -lc -lnosys
 endif
 ifeq ($(SRCLANG),c++)
 	USE_CXX = true
-	CXXLIBS = -lstdc++ -lm -lc
+	CXXLIBS = -lmruby -lstdc++ -lm -lc -lnosys
 	CXXRTS = cxxrt.o newlibrt.o
 endif
 
@@ -156,6 +156,11 @@ ifndef OMIT_TECS
 endif
 
 #
+#  mrubyのパス
+#
+MRUBY_PATH = ../mruby
+
+#
 #  共通コンパイルオプションの定義
 #
 COPTS := -g @(COPTS) $(COPTS)
@@ -168,10 +173,11 @@ endif
 ifdef OMIT_TECS
 	CDEFS := -DTOPPERS_OMIT_TECS $(CDEFS)
 endif
-CDEFS := $(CDEFS) @(CDEFS)
+CDEFS := $(CDEFS) @(CDEFS) -DTLSF_USE_LOCKS -DUSE_PRESYM -DMRB_IV_SEGMENT_SIZE=4 -DMRB_METHOD_T_STRUCT -DTLSF_STATISTIC
+
 INCLUDES := -I. -I$(SRCDIR)/include $(INCLUDES) -I$(SRCDIR)
 LDFLAGS := $(LDFLAGS) @(LDFLAGS)
-LIBS := @(LIBS) $(LIBS) $(CXXLIBS)
+LIBS := @(LIBS) $(LIBS) $(CXXLIBS) -L$(MRUBY_PATH)/build/f401re-tp/lib
 CFLAGS = $(COPTS) $(CDEFS) $(INCLUDES)
 
 #
@@ -190,11 +196,16 @@ ifdef USE_CXX
 else
 	APPL_COBJS := @(APPLOBJS)
 endif
-APPL_COBJS := $(APPL_COBJS) log_output.o vasyslog.o t_perror.o strerror.o
+APPL_COBJS := $(APPL_COBJS) log_output.o vasyslog.o t_perror.o strerror.o generated.o
 APPL_CFLAGS := $(APPL_CFLAGS)
 ifdef APPLDIRS
 	INCLUDES := $(INCLUDES) $(foreach dir,$(APPLDIRS),-I$(dir))
 endif
+
+INCLUDES := $(INCLUDES) -I$(MRUBY_PATH)/include -I$(SRCDIR)/library
+
+#  リンカスクリプトの定義を上書き (もとのやつを上書きした。。。)
+## LDSCRIPT = ./stm32f401re.ld
 
 #
 #  システムサービスに関する定義
@@ -258,7 +269,7 @@ CFG2_OUT_SRCS := kernel_cfg.h kernel_cfg.c $(CFG2_OUT_SRCS)
 #
 KERNEL_DIRS := $(KERNEL_DIRS) $(SRCDIR)/kernel
 KERNEL_ASMOBJS := $(KERNEL_ASMOBJS)
-KERNEL_COBJS := $(KERNEL_COBJS)
+KERNEL_COBJS := $(KERNEL_COBJS) tlsf.o
 KERNEL_CFLAGS := $(KERNEL_CFLAGS) -I$(SRCDIR)/kernel
 
 #

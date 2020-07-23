@@ -72,19 +72,22 @@
 #endif /* TASK_PORTID */
 
 #ifndef STACK_SIZE
-#define	STACK_SIZE		4096		/* タスクのスタックサイズ */
+#define	STACK_SIZE		40960		/* タスクのスタックサイズ */
 #endif /* STACK_SIZE */
 
 #ifndef LOOP_REF
 #define LOOP_REF		ULONG_C(1000000)	/* 速度計測用のループ回数 */
 #endif /* LOOP_REF */
 
+
+//#define OMIT_MEMPOOL_DEFAULT	// TLSFを使うための定義
+
 /*
  *  関数のプロトタイプ宣言
  */
 #ifndef TOPPERS_MACRO_ONLY
 
-extern void	task(intptr_t exinf);
+extern void	task1(intptr_t exinf);
 extern void	main_task(intptr_t exinf);
 extern void exc_task(intptr_t exinf);
 #ifdef INTNO1
@@ -94,6 +97,5 @@ extern void intno1_isr(intptr_t exinf);
 extern void	cpuexc_handler(void *p_excinf);
 #endif /* CPUEXC1 */
 extern void	cyclic_handler(intptr_t exinf);
-extern void	alarm_handler(intptr_t exinf);
 
 #endif /* TOPPERS_MACRO_ONLY */
