@@ -1,0 +1,33 @@
+***************
+*** 52,66 ****
+  {
+    mrb_value val;
+    val.value = brk->value;
+-   val.tt = brk->flags & RBREAK_VALUE_TT_MASK;
+    return val;
+  }
+  static inline void
+  mrb_break_value_set(struct RBreak *brk, mrb_value val)
+  {
+    brk->value = val.value;
+-   brk->flags &= ~RBREAK_VALUE_TT_MASK;
+-   brk->flags |= val.tt;
+  }
+  #endif  /* MRB_64BIT || MRB_USE_FLOAT || MRB_NAN_BOXING || MRB_WORD_BOXING */
+  #define mrb_break_proc_get(brk) ((brk)->proc)
+--- 52,66 ----
+  {
+    mrb_value val;
+    val.value = brk->value;
++   val.tt = MRB_OBJECT_GET_FLAG(brk) & RBREAK_VALUE_TT_MASK;
+    return val;
+  }
+  static inline void
+  mrb_break_value_set(struct RBreak *brk, mrb_value val)
+  {
+    brk->value = val.value;
++   MRB_OBJECT_UNSET_FLAG(brk, RBREAK_VALUE_TT_MASK);
++   MRB_OBJECT_SET_FLAG(brk, val.tt);
+  }
+  #endif  /* MRB_64BIT || MRB_USE_FLOAT || MRB_NAN_BOXING || MRB_WORD_BOXING */
+  #define mrb_break_proc_get(brk) ((brk)->proc)

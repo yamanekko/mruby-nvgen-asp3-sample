@@ -1,0 +1,44 @@
+***************
+*** 42,51 ****
+  #define RARRAY(v)  ((struct RArray*)(mrb_ptr(v)))
+  
+  #define MRB_ARY_EMBED_MASK  7
+- #define ARY_EMBED_P(a) ((a)->flags & MRB_ARY_EMBED_MASK)
+- #define ARY_UNSET_EMBED_FLAG(a) ((a)->flags &= ~(MRB_ARY_EMBED_MASK))
+- #define ARY_EMBED_LEN(a) ((mrb_int)(((a)->flags & MRB_ARY_EMBED_MASK) - 1))
+- #define ARY_SET_EMBED_LEN(a,len) ((a)->flags = ((a)->flags&~MRB_ARY_EMBED_MASK) | ((uint32_t)(len) + 1))
+  #define ARY_EMBED_PTR(a) ((mrb_value*)(&(a)->as.ary))
+  
+  #define ARY_LEN(a) (ARY_EMBED_P(a)?ARY_EMBED_LEN(a):(a)->as.heap.len)
+--- 42,51 ----
+  #define RARRAY(v)  ((struct RArray*)(mrb_ptr(v)))
+  
+  #define MRB_ARY_EMBED_MASK  7
++ #define ARY_EMBED_P(a) (MRB_OBJECT_GET_FLAG(a) & MRB_ARY_EMBED_MASK)
++ #define ARY_UNSET_EMBED_FLAG(a) (MRB_OBJECT_UNSET_FLAG(a, MRB_ARY_EMBED_MASK))
++ #define ARY_EMBED_LEN(a) ((mrb_int)(MRB_OBJECT_GET_FLAG(a) & MRB_ARY_EMBED_MASK) - 1)
++ #define ARY_SET_EMBED_LEN(a,len) (MRB_OBJECT_ASSIGN_FLAG(a, (MRB_OBJECT_GET_FLAG(a)&~MRB_ARY_EMBED_MASK) | ((uint32_t)(len) + 1)))
+  #define ARY_EMBED_PTR(a) ((mrb_value*)(&(a)->as.ary))
+  
+  #define ARY_LEN(a) (ARY_EMBED_P(a)?ARY_EMBED_LEN(a):(a)->as.heap.len)
+***************
+*** 62,70 ****
+  } while (0)
+  #define ARY_CAPA(a) (ARY_EMBED_P(a)?MRB_ARY_EMBED_LEN_MAX:(a)->as.heap.aux.capa)
+  #define MRB_ARY_SHARED      256
+- #define ARY_SHARED_P(a) ((a)->flags & MRB_ARY_SHARED)
+- #define ARY_SET_SHARED_FLAG(a) ((a)->flags |= MRB_ARY_SHARED)
+- #define ARY_UNSET_SHARED_FLAG(a) ((a)->flags &= ~MRB_ARY_SHARED)
+  
+  void mrb_ary_decref(mrb_state*, mrb_shared_array*);
+  MRB_API void mrb_ary_modify(mrb_state*, struct RArray*);
+--- 62,70 ----
+  } while (0)
+  #define ARY_CAPA(a) (ARY_EMBED_P(a)?MRB_ARY_EMBED_LEN_MAX:(a)->as.heap.aux.capa)
+  #define MRB_ARY_SHARED      256
++ #define ARY_SHARED_P(a) (MRB_OBJECT_GET_FLAG(a) & MRB_ARY_SHARED)
++ #define ARY_SET_SHARED_FLAG(a) (MRB_OBJECT_SET_FLAG(a, MRB_ARY_SHARED))
++ #define ARY_UNSET_SHARED_FLAG(a) (MRB_OBJECT_UNSET_FLAG(a, MRB_ARY_SHARED))
+  
+  void mrb_ary_decref(mrb_state*, mrb_shared_array*);
+  MRB_API void mrb_ary_modify(mrb_state*, struct RArray*);

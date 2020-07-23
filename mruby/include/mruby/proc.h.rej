@@ -1,0 +1,77 @@
+***************
+*** 23,35 ****
+  };
+  
+  /* flags (21bits): 1(shared flag):10(cioff/bidx):10(stack_len) */
+- #define MRB_ENV_SET_STACK_LEN(e,len) ((e)->flags = (((e)->flags & ~0x3ff)|((unsigned int)(len) & 0x3ff)))
+- #define MRB_ENV_STACK_LEN(e) ((mrb_int)((e)->flags & 0x3ff))
+  #define MRB_ENV_STACK_UNSHARED (1<<20)
+- #define MRB_ENV_UNSHARE_STACK(e) ((e)->flags |= MRB_ENV_STACK_UNSHARED)
+- #define MRB_ENV_STACK_SHARED_P(e) (((e)->flags & MRB_ENV_STACK_UNSHARED) == 0)
+- #define MRB_ENV_BIDX(e) (((e)->flags >> 10) & 0x3ff)
+- #define MRB_ENV_SET_BIDX(e,idx) ((e)->flags = (((e)->flags & ~(0x3ff<<10))|((unsigned int)(idx) & 0x3ff)<<10))
+  
+  void mrb_env_unshare(mrb_state*, struct REnv*);
+  
+--- 23,35 ----
+  };
+  
+  /* flags (21bits): 1(shared flag):10(cioff/bidx):10(stack_len) */
++ #define MRB_ENV_SET_STACK_LEN(e,len) (MRB_OBJECT_ASSIGN_FLAG(e, ((MRB_OBJECT_GET_FLAG(e) & ~0x3ff)|((unsigned int)(len) & 0x3ff))))
++ #define MRB_ENV_STACK_LEN(e) ((mrb_int)(MRB_OBJECT_GET_FLAG(e) & 0x3ff))
+  #define MRB_ENV_STACK_UNSHARED (1<<20)
++ #define MRB_ENV_UNSHARE_STACK(e) (MRB_OBJECT_SET_FLAG(e, MRB_ENV_STACK_UNSHARED))
++ #define MRB_ENV_STACK_SHARED_P(e) ((MRB_OBJECT_GET_FLAG(e) & MRB_ENV_STACK_UNSHARED) == 0)
++ #define MRB_ENV_BIDX(e) ((MRB_OBJECT_GET_FLAG(e) >> 10) & 0x3ff)
++ #define MRB_ENV_SET_BIDX(e,idx) (MRB_OBJECT_ASSIGN_FLAG(e, ((MRB_OBJECT_GET_FLAG(e) & ~(0x3ff<<10))|((unsigned int)(idx) & 0x3ff)<<10)))
+  
+  void mrb_env_unshare(mrb_state*, struct REnv*);
+  
+***************
+*** 56,69 ****
+  #define MRB_ASPEC_BLOCK(a)        ((a) & 1)
+  
+  #define MRB_PROC_CFUNC_FL 128
+- #define MRB_PROC_CFUNC_P(p) (((p)->flags & MRB_PROC_CFUNC_FL) != 0)
+  #define MRB_PROC_CFUNC(p) (p)->body.func
+  #define MRB_PROC_STRICT 256
+- #define MRB_PROC_STRICT_P(p) (((p)->flags & MRB_PROC_STRICT) != 0)
+  #define MRB_PROC_ORPHAN 512
+- #define MRB_PROC_ORPHAN_P(p) (((p)->flags & MRB_PROC_ORPHAN) != 0)
+  #define MRB_PROC_ENVSET 1024
+- #define MRB_PROC_ENV_P(p) (((p)->flags & MRB_PROC_ENVSET) != 0)
+  #define MRB_PROC_ENV(p) (MRB_PROC_ENV_P(p) ? (p)->e.env : NULL)
+  #define MRB_PROC_TARGET_CLASS(p) (MRB_PROC_ENV_P(p) ? (p)->e.env->c : (p)->e.target_class)
+  #define MRB_PROC_SET_TARGET_CLASS(p,tc) do {\
+--- 56,69 ----
+  #define MRB_ASPEC_BLOCK(a)        ((a) & 1)
+  
+  #define MRB_PROC_CFUNC_FL 128
++ #define MRB_PROC_CFUNC_P(p) ((MRB_OBJECT_GET_FLAG(p) & MRB_PROC_CFUNC_FL) != 0)
+  #define MRB_PROC_CFUNC(p) (p)->body.func
+  #define MRB_PROC_STRICT 256
++ #define MRB_PROC_STRICT_P(p) ((MRB_OBJECT_GET_FLAG(p) & MRB_PROC_STRICT) != 0)
+  #define MRB_PROC_ORPHAN 512
++ #define MRB_PROC_ORPHAN_P(p) ((MRB_OBJECT_GET_FLAG(p) & MRB_PROC_ORPHAN) != 0)
+  #define MRB_PROC_ENVSET 1024
++ #define MRB_PROC_ENV_P(p) ((MRB_OBJECT_GET_FLAG(p) & MRB_PROC_ENVSET) != 0)
+  #define MRB_PROC_ENV(p) (MRB_PROC_ENV_P(p) ? (p)->e.env : NULL)
+  #define MRB_PROC_TARGET_CLASS(p) (MRB_PROC_ENV_P(p) ? (p)->e.env->c : (p)->e.target_class)
+  #define MRB_PROC_SET_TARGET_CLASS(p,tc) do {\
+***************
+*** 77,83 ****
+    }\
+  } while (0)
+  #define MRB_PROC_SCOPE 2048
+- #define MRB_PROC_SCOPE_P(p) (((p)->flags & MRB_PROC_SCOPE) != 0)
+  
+  #define mrb_proc_ptr(v)    ((struct RProc*)(mrb_ptr(v)))
+  
+--- 77,83 ----
+    }\
+  } while (0)
+  #define MRB_PROC_SCOPE 2048
++ #define MRB_PROC_SCOPE_P(p) ((MRB_OBJECT_GET_FLAG(p) & MRB_PROC_SCOPE) != 0)
+  
+  #define mrb_proc_ptr(v)    ((struct RProc*)(mrb_ptr(v)))
+  

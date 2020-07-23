@@ -1,0 +1,46 @@
+***************
+*** 84,89 ****
+  #endif
+  #endif
+  
+  MRB_END_DECL
+  
+  #endif  /* MRUBY_COMMON_H */
+--- 84,120 ----
+  #endif
+  #endif
+  
++ #ifdef USE_PRESYM
++ #define GC_NEVER 7 /* red */
++ extern struct mrb_obj_flags *object_flags_ptr;
++ #define MRB_OBJECT_GET_FLAG(a) ( \
++   (a)->color == GC_NEVER ? \
++     (object_flags_ptr[(a)->flags].flags) : \
++     ((a)->flags) \
++   )
++ #define MRB_OBJECT_SET_FLAG(a,v) ( \
++   (a)->color == GC_NEVER ? \
++     (object_flags_ptr[(a)->flags].flags |= v) : \
++     (((struct RBasic *)a)->flags |= v) \
++   )
++ #define MRB_OBJECT_UNSET_FLAG(a,v) ( \
++   (a)->color == GC_NEVER ? \
++     (object_flags_ptr[(a)->flags].flags &= ~v) : \
++     (((struct RBasic *)a)->flags &= ~v) \
++   )
++ #define MRB_OBJECT_ASSIGN_FLAG(a,v) ( \
++   (a)->color == GC_NEVER ? \
++     (object_flags_ptr[(a)->flags].flags = v) : \
++     (((struct RBasic *)a)->flags = v) \
++   )
++ #else
++ #define MRB_OBJECT_GET_FLAG(a) ((a)->flags)
++ #define MRB_OBJECT_SET_FLAG(a,v) ((a)->flags |= v)
++ #define MRB_OBJECT_UNSET_FLAG(a,v) ((a)->flags &= ~v)
++ #define MRB_OBJECT_ASSIGN_FLAG(a,v) ((a)->flags = v)
++ #endif
++ 
++ 
+  MRB_END_DECL
+  
+  #endif  /* MRUBY_COMMON_H */

@@ -1,0 +1,19 @@
+***************
+*** 205,212 ****
+  
+  #define MRB_HASH_DEFAULT      1
+  #define MRB_HASH_PROC_DEFAULT 2
+- #define MRB_RHASH_DEFAULT_P(h) (RHASH(h)->flags & MRB_HASH_DEFAULT)
+- #define MRB_RHASH_PROCDEFAULT_P(h) (RHASH(h)->flags & MRB_HASH_PROC_DEFAULT)
+  
+  /* GC functions */
+  void mrb_gc_mark_hash(mrb_state*, struct RHash*);
+--- 205,212 ----
+  
+  #define MRB_HASH_DEFAULT      1
+  #define MRB_HASH_PROC_DEFAULT 2
++ #define MRB_RHASH_DEFAULT_P(h) (MRB_OBJECT_GET_FLAG(RHASH(h)) & MRB_HASH_DEFAULT)
++ #define MRB_RHASH_PROCDEFAULT_P(h) (MRB_OBJECT_GET_FLAG(RHASH(h)) & MRB_HASH_PROC_DEFAULT)
+  
+  /* GC functions */
+  void mrb_gc_mark_hash(mrb_state*, struct RHash*);

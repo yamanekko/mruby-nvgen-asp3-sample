@@ -1,0 +1,95 @@
+***************
+*** 213,218 ****
+  
+  typedef void (*mrb_atexit_func)(struct mrb_state*);
+  
+  typedef struct mrb_state {
+    struct mrb_jmpbuf *jmp;
+  
+--- 213,226 ----
+  
+  typedef void (*mrb_atexit_func)(struct mrb_state*);
+  
++ #ifdef USE_PRESYM
++ struct mrb_obj_flags {
++   enum mrb_vtype tt:8;
++   uint32_t color:3;
++   uint32_t flags:21;
++ };
++ #endif
++ 
+  typedef struct mrb_state {
+    struct mrb_jmpbuf *jmp;
+  
+***************
+*** 276,281 ****
+    struct RObject *arena_err;              /* pre-allocated arena overfow error */
+  #endif
+  
+    void *ud; /* auxiliary data */
+  
+  #ifdef MRB_FIXED_STATE_ATEXIT_STACK
+--- 284,294 ----
+    struct RObject *arena_err;              /* pre-allocated arena overfow error */
+  #endif
+  
++ #ifdef USE_PRESYM
++   const struct RBasic **red_objects;
++   struct mrb_obj_flags *object_flags;
++ #endif
++ 
+    void *ud; /* auxiliary data */
+  
+  #ifdef MRB_FIXED_STATE_ATEXIT_STACK
+***************
+*** 1066,1071 ****
+   */
+  MRB_API mrb_state* mrb_open_core(mrb_allocf f, void *ud);
+  
+  /**
+   * Closes and frees a mrb_state.
+   *
+--- 1079,1099 ----
+   */
+  MRB_API mrb_state* mrb_open_core(mrb_allocf f, void *ud);
+  
++ /**
++  * Load mrb_state from memory
++  *
++  * @param mrb
++  *      Origianl mrb_state.
++  * @param f
++  *      Reference to the allocation function.
++  * @param ud
++  *      User data will be passed to custom allocator f.
++  *      If user data isn't required just pass NULL.
++  * @return
++  *      Pointer to the copied mrb_state.
++  */
++ MRB_API mrb_state* mrb_load_state_core(mrb_state *mrb, mrb_allocf f, void *ud);
++ 
+  /**
+   * Closes and frees a mrb_state.
+   *
+***************
+*** 1287,1292 ****
+  
+  MRB_API mrb_value mrb_format(mrb_state *mrb, const char *format, ...);
+  
+  #if 0
+  /* memcpy and memset does not work with gdb reverse-next on my box */
+  /* use naive memcpy and memset instead */
+--- 1315,1327 ----
+  
+  MRB_API mrb_value mrb_format(mrb_state *mrb, const char *format, ...);
+  
++ 
++ MRB_API void mrb_copy_callinfo(mrb_state *mrb);
++ MRB_API void mrb_copy_stack(mrb_state *mrb);
++ 
++ #define DECLARE_RUNTIME_MRBGEM(name) void GENERATED_TMP_mrb_##name##_gem_init(mrb_state*)
++ #define LOAD_RUNTIME_MRBGEM(name) GENERATED_TMP_mrb_##name##_gem_init(mrb)
++ 
+  #if 0
+  /* memcpy and memset does not work with gdb reverse-next on my box */
+  /* use naive memcpy and memset instead */
